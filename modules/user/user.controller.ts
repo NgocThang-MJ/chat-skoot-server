@@ -2,13 +2,7 @@ import { Request, Response } from "express";
 import cloudinary from "cloudinary";
 import { ObjectId } from "mongodb";
 import { getDbInstance } from "../../util/mongodb";
-
-interface RequestImage {
-  name: string;
-  data: string;
-  userId: string;
-  img_name: string;
-}
+import { RequestImage } from "./user.interface";
 
 export const uploadAvt = async (req: Request, res: Response) => {
   try {
@@ -30,7 +24,28 @@ export const uploadAvt = async (req: Request, res: Response) => {
     await cloudinary.v2.uploader.destroy(reqImg.img_name);
     res.status(200).json(response);
   } catch (err) {
-    console.log(err, "Error server");
+    console.log(err, "Error when change avatar");
+    res.status(400).json({ msg: "Error" });
+  }
+};
+
+export const changeUsername = async (req: Request, res: Response) => {
+  try {
+    console.log(req.body, "body");
+    const { newUsername, userId } = req.body;
+    const user = await getDbInstance()
+      .collection("users")
+      .updateOne(
+        { _id: new ObjectId(userId) },
+        {
+          $set: {
+            name: newUsername,
+          },
+        }
+      );
+    res.status(200).json(user);
+  } catch (err) {
+    console.log(err, "Error when change user name");
     res.status(400).json({ msg: "Error" });
   }
 };

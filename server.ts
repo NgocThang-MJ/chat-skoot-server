@@ -4,7 +4,7 @@ import { Server, Socket } from "socket.io";
 import cors from "cors";
 import upload from "express-fileupload";
 import cloudinary from "cloudinary";
-import database from "./util/mongodb";
+import connectToDb from "./util/mongodb";
 require("dotenv").config();
 
 import userRoute from "./modules/user/user.route";
@@ -27,7 +27,6 @@ cloudinary.v2.config({
   api_secret: API_SECRET,
 });
 
-// export const db = database();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: { origin: process.env.CLIENT_URL },
@@ -36,7 +35,7 @@ const io = new Server(httpServer, {
 //   console.log(socket.id);
 // });
 
-database()
+connectToDb()
   .then(() => {
     console.log("Connected to db");
   })
