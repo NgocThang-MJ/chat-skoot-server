@@ -31,9 +31,8 @@ export const uploadAvt = async (req: Request, res: Response) => {
 
 export const changeUsername = async (req: Request, res: Response) => {
   try {
-    console.log(req.body, "body");
     const { newUsername, userId } = req.body;
-    const user = await getDbInstance()
+    await getDbInstance()
       .collection("users")
       .updateOne(
         { _id: new ObjectId(userId) },
@@ -43,7 +42,7 @@ export const changeUsername = async (req: Request, res: Response) => {
           },
         }
       );
-    res.status(200).json(user);
+    res.status(200).json({ newUsername });
   } catch (err) {
     console.log(err, "Error when change user name");
     res.status(400).json({ msg: "Error" });
