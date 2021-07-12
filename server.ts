@@ -9,11 +9,15 @@ import { MongoClient, ObjectId } from "mongodb";
 require("dotenv").config();
 
 const PORT = process.env.PORT || 5000;
+const CLOUD_NAME = process.env.CLOUD_NAME;
+const API_KEY = process.env.API_KEY;
+const API_SECRET = process.env.API_SECRET;
 
 interface RequestImage {
   name: string;
   data: string;
   userId: string;
+  img_name: string;
 }
 
 const app = express();
@@ -22,9 +26,9 @@ app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(upload());
 
 cloudinary.v2.config({
-  cloud_name: "liquid-cloudinary",
-  api_key: "184657763147963",
-  api_secret: "qG5BZ8jXcBZPs0OYLiTbKzAb-IA",
+  cloud_name: CLOUD_NAME,
+  api_key: API_KEY,
+  api_secret: API_SECRET,
 });
 
 app.post("/api/upload", async (req: Request, res: Response) => {
@@ -33,7 +37,8 @@ app.post("/api/upload", async (req: Request, res: Response) => {
     const response = await cloudinary.v2.uploader.upload(reqImg.data, {
       public_id: `${reqImg.name.split(".")[0] + new Date().getMilliseconds()}`,
     });
-    await client
+    res.status(200).json(response);
+    client
       .db(`${process.env.DB_NAME}`)
       .collection("users")
       .updateOne(
@@ -41,10 +46,11 @@ app.post("/api/upload", async (req: Request, res: Response) => {
         {
           $set: {
             image: response.url,
+            image_name: response.public_id,
           },
         }
       );
-    res.status(200).json(response);
+    cloudinary.v2.uploader.destroy(reqImg.img_name);
   } catch (err) {
     console.log(err, "Error server");
     res.status(400).json({ msg: "Error" });
