@@ -79,3 +79,17 @@ export const searchUser = async (req: Request, res: Response) => {
     res.status(400).json({ msg: "Error" });
   }
 };
+
+export const fetchUserById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    console.log(req.params);
+    const user = await getDbInstance()
+      .collection("users")
+      .findOne({ _id: new ObjectId(id) });
+    res.status(200).json(user);
+  } catch (err) {
+    console.log("Error when fetch user by id: ", err);
+    res.status(400).json({ msg: "Error" });
+  }
+};
