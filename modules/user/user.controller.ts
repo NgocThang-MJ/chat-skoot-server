@@ -52,7 +52,6 @@ export const changeUsername = async (req: Request, res: Response) => {
 export const searchUser = async (req: Request, res: Response) => {
   try {
     const { query } = req.body;
-    console.log(query);
     const searchedUser = await getDbInstance()
       .collection("users")
       .aggregate([
@@ -83,13 +82,53 @@ export const searchUser = async (req: Request, res: Response) => {
 export const fetchUserById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    console.log(req.params);
     const user = await getDbInstance()
       .collection("users")
       .findOne({ _id: new ObjectId(id) });
     res.status(200).json(user);
   } catch (err) {
     console.log("Error when fetch user by id: ", err);
+    res.status(400).json({ msg: "Error" });
+  }
+};
+
+export const sendFriendRequest = async (req: Request, res: Response) => {
+  try {
+    const { senderId, receiverId } = req.body;
+    await getDbInstance()
+      .collection("users")
+      .updateOne(
+        { _id: new ObjectId(receiverId) },
+        { $addToSet: { friend_requests: senderId } }
+      );
+    res.status(200).json({ msg: "ok" });
+  } catch (err) {
+    console.log("Error when send friend request: ", err);
+    res.status(400).json({ msg: "Error" });
+  }
+};
+
+export const approveFriendRequest = async (req: Request, res: Response) => {
+  try {
+    const { userId, friendId } = req.body;
+    await getDbInstance()
+      .collection("users")
+      .updateOne(
+        { _id: new ObjectId(userId) },
+        {
+          $addToSet: { friends: friendId },
+          $pull: { friend_requests: friendId },
+        }
+      );
+    await getDbInstance()
+      .collection("users")
+      .updateOne(
+        { _id: new ObjectId(friendId) },
+        { $addToSet: { friends: userId } }
+      );
+    res.status(200).json({ msg: "ok" });
+  } catch (err) {
+    console.log("Error when approve friend request: ", err);
     res.status(400).json({ msg: "Error" });
   }
 };
