@@ -48,3 +48,34 @@ export const changeUsername = async (req: Request, res: Response) => {
     res.status(400).json({ msg: "Error" });
   }
 };
+
+export const searchUser = async (req: Request, res: Response) => {
+  try {
+    const { query } = req.body;
+    console.log(query);
+    const searchedUser = await getDbInstance()
+      .collection("users")
+      .aggregate([
+        {
+          $search: {
+            text: {
+              path: "name",
+              query: query,
+            },
+          },
+        },
+        {
+          $project: {
+            name: 1,
+            image: 1,
+          },
+        },
+      ])
+      .toArray();
+
+    res.status(200).json({ users: searchedUser });
+  } catch (err) {
+    console.log("Error when search user", err);
+    res.status(400).json({ msg: "Error" });
+  }
+};
