@@ -92,6 +92,26 @@ export const fetchUserById = async (req: Request, res: Response) => {
   }
 };
 
+export const fetchUsersByIds = async (req: Request, res: Response) => {
+  try {
+    const ids: string[] = req.body.ids;
+    const objIdArray = ids.map((id) => {
+      return new ObjectId(id);
+    });
+    const users = await getDbInstance()
+      .collection("users")
+      .aggregate([
+        { $match: { _id: { $in: objIdArray } } },
+        { $project: { image: 1, name: 1 } },
+      ])
+      .toArray();
+    res.status(200).json(users);
+  } catch (err) {
+    console.log("Error when fetch users by ids: ", err);
+    res.status(400).json({ msg: "Error" });
+  }
+};
+
 export const sendFriendRequest = async (req: Request, res: Response) => {
   try {
     const { senderId, receiverId } = req.body;
