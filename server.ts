@@ -28,12 +28,19 @@ cloudinary.v2.config({
 });
 
 const httpServer = createServer(app);
+
 const io = new Server(httpServer, {
   cors: { origin: process.env.CLIENT_URL },
 });
-// io.on("connection", (socket: Socket) => {
-//   console.log(socket.id);
-// });
+
+io.on("connection", (socket: Socket) => {
+  // console.log("user connected");
+  for (let [id, socket] of io.of("/").sockets) {
+    console.log(id, "id");
+    console.log(socket, "socket");
+  }
+  // console.log(socket.id);
+});
 
 connectToDb()
   .then(() => {
