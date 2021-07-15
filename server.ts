@@ -2,7 +2,6 @@ import express from "express";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import cors from "cors";
-import upload from "express-fileupload";
 import cloudinary from "cloudinary";
 import connectToDb from "./util/mongodb";
 require("dotenv").config();
@@ -17,7 +16,6 @@ const API_SECRET = process.env.API_SECRET;
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: process.env.CLIENT_URL }));
-app.use(upload());
 
 app.use("/api/users", userRoute);
 
@@ -35,10 +33,6 @@ const io = new Server(httpServer, {
 
 io.on("connection", (socket: Socket) => {
   // console.log("user connected");
-  for (let [id, socket] of io.of("/").sockets) {
-    console.log(id, "id");
-    console.log(socket, "socket");
-  }
   // console.log(socket.id);
 });
 
