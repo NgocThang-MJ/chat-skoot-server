@@ -13,7 +13,7 @@ export const uploadAvt = async (req: Request, res: Response) => {
     await getDbInstance()
       .collection("users")
       .updateOne(
-        { _id: new ObjectId(req.body.userId) },
+        { _id: new ObjectId(req.body.user_id) },
         {
           $set: {
             image: response.url,
@@ -31,11 +31,11 @@ export const uploadAvt = async (req: Request, res: Response) => {
 
 export const changeUsername = async (req: Request, res: Response) => {
   try {
-    const { newUsername, userId } = req.body;
+    const { newUsername, user_id } = req.body;
     await getDbInstance()
       .collection("users")
       .updateOne(
-        { _id: new ObjectId(userId) },
+        { _id: new ObjectId(user_id) },
         {
           $set: {
             name: newUsername,
@@ -130,11 +130,11 @@ export const sendFriendRequest = async (req: Request, res: Response) => {
 
 export const approveFriendRequest = async (req: Request, res: Response) => {
   try {
-    const { userId, friendId } = req.body;
+    const { user_id, friendId } = req.body;
     await getDbInstance()
       .collection("users")
       .updateOne(
-        { _id: new ObjectId(userId) },
+        { _id: new ObjectId(user_id) },
         {
           $addToSet: { friends: friendId },
           $pull: { friend_requests: friendId },
@@ -144,7 +144,7 @@ export const approveFriendRequest = async (req: Request, res: Response) => {
       .collection("users")
       .updateOne(
         { _id: new ObjectId(friendId) },
-        { $addToSet: { friends: userId } }
+        { $addToSet: { friends: user_id } }
       );
     res.status(200).json({ msg: "ok" });
   } catch (err) {
