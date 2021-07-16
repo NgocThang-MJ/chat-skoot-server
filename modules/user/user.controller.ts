@@ -21,7 +21,7 @@ export const uploadAvt = async (req: Request, res: Response) => {
           },
         }
       );
-    await cloudinary.v2.uploader.destroy(reqImg.imgName);
+    await cloudinary.v2.uploader.destroy(reqImg.img_name);
     res.status(200).json(response);
   } catch (err) {
     console.log(err, "Error when change avatar");

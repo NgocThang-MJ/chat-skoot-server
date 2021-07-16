@@ -1,6 +1,6 @@
 export interface RequestImage {
   name: string;
   data: string;
-  userId: string;
-  imgName: string;
+  user_id: string;
+  img_name: string;
 }
