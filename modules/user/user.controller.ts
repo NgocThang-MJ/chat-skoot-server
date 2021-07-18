@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import cloudinary from "cloudinary";
-import { ObjectId } from "mongodb";
+import { Db, ObjectId } from "mongodb";
 import { getDbInstance } from "../../util/mongodb";
 import { RequestImage } from "./user.interface";
 
@@ -130,22 +130,46 @@ export const sendFriendRequest = async (req: Request, res: Response) => {
 
 export const approveFriendRequest = async (req: Request, res: Response) => {
   try {
-    const { user_id, friendId } = req.body;
-    await getDbInstance()
+    const {
+      user_id,
+      friend_id,
+      user_image,
+      friend_image,
+      user_name,
+      friend_name,
+    } = req.body;
+    const userObjId = new ObjectId(user_id);
+    const friendObjId = new ObjectId(friend_id);
+    const db: Db = getDbInstance();
+    await db.collection("users").updateOne(
+      { _id: userObjId },
+      {
+        $addToSet: { friends: friend_id },
+        $pull: { friend_requests: friend_id },
+      }
+    );
+    await db
       .collection("users")
-      .updateOne(
-        { _id: new ObjectId(user_id) },
+      .updateOne({ _id: friendObjId }, { $addToSet: { friends: user_id } });
+    await db.collection("rooms").insertOne({
+      is_auto_create: true,
+      memberIds: [user_id, friend_id],
+      members: [
         {
-          $addToSet: { friends: friendId },
-          $pull: { friend_requests: friendId },
-        }
-      );
-    await getDbInstance()
-      .collection("users")
-      .updateOne(
-        { _id: new ObjectId(friendId) },
-        { $addToSet: { friends: user_id } }
-      );
+          id: user_id,
+          name: user_name,
+          image: user_image,
+        },
+        {
+          id: friend_id,
+          name: friend_name,
+          image: friend_image,
+        },
+      ],
+      last_msg: null,
+      last_date_msg: new Date(),
+    });
+
     res.status(200).json({ msg: "ok" });
   } catch (err) {
     console.log("Error when approve friend request: ", err);
