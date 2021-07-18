@@ -47,6 +47,15 @@ io.on("connection", (socket: Socket) => {
   socket.on("join room", (room_id) => {
     socket.join(room_id);
   });
+
+  socket.on("typing", ({ room_id, image }) => {
+    socket.to(room_id).emit("typing", { image });
+  });
+
+  socket.on("blur", ({ room_id, image }) => {
+    socket.to(room_id).emit("blur", { image });
+  });
+
   socket.on("message", async ({ content, sender_id, room_id }) => {
     const db: Db = getDbInstance();
     const present = new Date();
