@@ -153,6 +153,7 @@ export const approveFriendRequest = async (req: Request, res: Response) => {
       .updateOne({ _id: friendObjId }, { $addToSet: { friends: user_id } });
     await db.collection("rooms").insertOne({
       is_auto_create: true,
+      conversation_id: new ObjectId(),
       memberIds: [user_id, friend_id],
       members: [
         {

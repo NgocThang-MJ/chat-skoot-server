@@ -48,44 +48,51 @@ io.on("connection", (socket: Socket) => {
     socket.join(room_id);
   });
 
-  socket.on("typing", ({ room_id, image }) => {
-    socket.to(room_id).emit("typing", { image });
+  socket.on("leave room", (room_socket_id) => {
+    socket.leave(room_socket_id);
   });
 
-  socket.on("blur", ({ room_id, image }) => {
-    socket.to(room_id).emit("blur", { image });
+  socket.on("typing", ({ room_socket_id, image }) => {
+    socket.to(room_socket_id).emit("typing", { image });
   });
 
-  socket.on("message", async ({ content, sender_id, room_id }) => {
-    const db: Db = getDbInstance();
-    const present = new Date();
-    const newMessage = await db.collection("chats").insertOne({
-      room_id,
-      content,
-      sender_id,
-      createdAt: present,
-    });
-    const updatedRoom = await db.collection("rooms").findOneAndUpdate(
-      { _id: new ObjectId(room_id) },
-      {
-        $set: { last_msg: content, last_date_msg: present },
-      },
-      {
-        returnDocument: "after",
-      }
-    );
-    const message_id = newMessage.insertedId;
-
-    io.in(room_id).emit("new message", updatedRoom.value);
-
-    io.in(room_id).emit("message", {
-      _id: message_id,
-      room_id,
-      content,
-      sender_id,
-      createdAt: present,
-    });
+  socket.on("blur", ({ room_socket_id, image }) => {
+    socket.to(room_socket_id).emit("blur", { image });
   });
+
+  socket.on(
+    "message",
+    async ({ content, sender_id, room_id, room_socket_id }) => {
+      const db: Db = getDbInstance();
+      const present = new Date();
+      const newMessage = await db.collection("chats").insertOne({
+        room_id,
+        content,
+        sender_id,
+        createdAt: present,
+      });
+      const updatedRoom = await db.collection("rooms").findOneAndUpdate(
+        { _id: new ObjectId(room_id) },
+        {
+          $set: { last_msg: content, last_date_msg: present },
+        },
+        {
+          returnDocument: "after",
+        }
+      );
+      const message_id = newMessage.insertedId;
+
+      io.in(room_id).emit("new message", updatedRoom.value);
+
+      io.in(room_socket_id).emit("message", {
+        _id: message_id,
+        room_id,
+        content,
+        sender_id,
+        createdAt: present,
+      });
+    }
+  );
   // console.log(socket.id);
 });
 
