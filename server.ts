@@ -52,12 +52,12 @@ io.on("connection", (socket: Socket) => {
     socket.leave(room_socket_id);
   });
 
-  socket.on("typing", ({ room_socket_id, image }) => {
-    socket.to(room_socket_id).emit("typing", { image });
+  socket.on("typing", ({ room_socket_id, user_id }) => {
+    socket.to(room_socket_id).emit("typing", { user_id });
   });
 
-  socket.on("blur", ({ room_socket_id, image }) => {
-    socket.to(room_socket_id).emit("blur", { image });
+  socket.on("blur", ({ room_socket_id, user_id }) => {
+    socket.to(room_socket_id).emit("blur", { user_id });
   });
 
   socket.on(
