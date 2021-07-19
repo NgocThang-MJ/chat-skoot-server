@@ -26,7 +26,7 @@ export const fetchMessages = async (req: Request, res: Response) => {
       .aggregate([
         { $match: { room_id } },
         { $sort: { createdAt: -1 } },
-        { $limit: 40 },
+        { $limit: 25 },
       ])
       .toArray();
     res.status(200).json(messages);
