@@ -80,16 +80,16 @@ io.on("connection", (socket: Socket) => {
           returnDocument: "after",
         }
       );
-      const message_id = newMessage.insertedId;
+      // const message_id = newMessage.insertedId;
 
       io.in(room_id).emit("new message", updatedRoom.value);
 
-      io.in(room_socket_id).emit("message", {
-        _id: message_id,
-        room_id,
+      socket.to(room_socket_id).emit("message", {
+        // _id: message_id,
+        // room_id,
         content,
         sender_id,
-        createdAt: present,
+        // createdAt: present,
       });
     }
   );
