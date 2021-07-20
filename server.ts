@@ -44,11 +44,12 @@ io.on("connection", (socket: Socket) => {
   //   console.log(content);
   //   getDbInstance().collection("chats").insertOne({});
   // });
-  socket.on("join room", (room_id) => {
-    socket.join(room_id);
+  socket.on("join room", (room_ids) => {
+    socket.join(room_ids);
   });
 
   socket.on("leave room", (room_socket_id) => {
+    console.log("leave room");
     socket.leave(room_socket_id);
   });
 
@@ -65,7 +66,7 @@ io.on("connection", (socket: Socket) => {
     async ({ content, sender_id, room_id, room_socket_id }) => {
       const db: Db = getDbInstance();
       const present = new Date();
-      const newMessage = await db.collection("chats").insertOne({
+      await db.collection("chats").insertOne({
         room_id,
         content,
         sender_id,
