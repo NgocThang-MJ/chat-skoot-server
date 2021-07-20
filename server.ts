@@ -111,7 +111,28 @@ io.on("connection", (socket: Socket) => {
       });
     }
   );
-  // console.log(socket.id);
+
+  // Call
+  socket.on("call", ({ room_id, signal_data, name_caller, image_caller }) => {
+    socket.to(room_id).emit("call", {
+      signal_data,
+      name_caller,
+      image_caller,
+      room_id,
+    });
+  });
+
+  socket.on("answer", ({ signal_data, room_id }) => {
+    socket.to(room_id).emit("answer", signal_data);
+  });
+
+  socket.on("off call", (room_id) => {
+    socket.to(room_id).emit("off call");
+  });
+
+  socket.on("end call", (room_id) => {
+    socket.to(room_id).emit("end call");
+  });
 });
 
 connectToDb()
