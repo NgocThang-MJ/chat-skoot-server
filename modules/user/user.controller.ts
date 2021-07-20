@@ -7,20 +7,30 @@ import { RequestImage } from "./user.interface";
 export const uploadAvt = async (req: Request, res: Response) => {
   try {
     const reqImg: RequestImage = req.body;
+    const db = getDbInstance();
     const response = await cloudinary.v2.uploader.upload(reqImg.data, {
       public_id: `${reqImg.name.split(".")[0] + new Date().getTime()}`,
     });
-    await getDbInstance()
-      .collection("users")
-      .updateOne(
-        { _id: new ObjectId(req.body.user_id) },
-        {
-          $set: {
-            image: response.url,
-            image_name: response.public_id,
-          },
-        }
-      );
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(req.body.user_id) },
+      {
+        $set: {
+          image: response.url,
+          image_name: response.public_id,
+        },
+      }
+    );
+    await db.collection("rooms").updateMany(
+      {
+        "members.id": reqImg.user_id,
+      },
+      {
+        $set: { "members.$[user].image": response.url },
+      },
+      {
+        arrayFilters: [{ "user.id": reqImg.user_id }],
+      }
+    );
     await cloudinary.v2.uploader.destroy(reqImg.img_name);
     res.status(200).json(response);
   } catch (err) {
@@ -32,16 +42,26 @@ export const uploadAvt = async (req: Request, res: Response) => {
 export const changeUsername = async (req: Request, res: Response) => {
   try {
     const { newUsername, user_id } = req.body;
-    await getDbInstance()
-      .collection("users")
-      .updateOne(
-        { _id: new ObjectId(user_id) },
-        {
-          $set: {
-            name: newUsername,
-          },
-        }
-      );
+    const db = getDbInstance();
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(user_id) },
+      {
+        $set: {
+          name: newUsername,
+        },
+      }
+    );
+    await db.collection("rooms").updateMany(
+      {
+        "members.id": user_id,
+      },
+      {
+        $set: { "members.$[user].name": newUsername },
+      },
+      {
+        arrayFilters: [{ "user.id": user_id }],
+      }
+    );
     res.status(200).json({ newUsername });
   } catch (err) {
     console.log(err, "Error when change user name");
