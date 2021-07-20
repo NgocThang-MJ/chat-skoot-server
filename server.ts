@@ -36,22 +36,39 @@ const io = new Server(httpServer, {
   cors: { origin: process.env.CLIENT_URL },
 });
 
+let onlineIds: string[] = [];
+
 io.on("connection", (socket: Socket) => {
-  // socket.on("disconnect", (reason) => {
-  //   console.log(reason);
-  // });
+  socket.on("disconnect", () => {
+    onlineIds = onlineIds.filter((id) => id !== socket.data.user_id);
+    socket.to(socket.data.rooms).emit("leave room", socket.data.user_id);
+  });
   // socket.on("private msg", ({ content }) => {
   //   console.log(content);
   //   getDbInstance().collection("chats").insertOne({});
   // });
-  socket.on("join room", (room_ids) => {
-    socket.join(room_ids);
+  socket.on("join room", ({ ids, user_id }) => {
+    socket.join(ids);
+    socket.data.user_id = user_id;
+    socket.data.rooms = ids;
+    !onlineIds.includes(user_id) && onlineIds.push(user_id);
+    io.to(ids).emit("joined room", onlineIds);
   });
 
-  socket.on("leave room", (room_socket_id) => {
-    console.log("leave room");
-    socket.leave(room_socket_id);
+  // socket.on("leave room", ({ ids, user_id }) => {
+  //   console.log("leave room", user_id);
+  //   onlineIds = onlineIds.filter((id) => id !== user_id);
+  //   socket.to(ids).emit("leave room", user_id);
+  // });
+
+  socket.on("join conversation", (id) => {
+    socket.join(id);
   });
+
+  // socket.on("leave room", (room_socket_id) => {
+  //   console.log("leave room");
+  //   socket.leave(room_socket_id);
+  // });
 
   // socket.on("typing", ({ room_socket_id, user_id }) => {
   //   socket.to(room_socket_id).emit("typing", { user_id });
