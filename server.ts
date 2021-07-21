@@ -123,15 +123,21 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("answer", ({ signal_data, room_id }) => {
+    console.log("answer room id", room_id);
     socket.to(room_id).emit("answer", signal_data);
   });
 
   socket.on("off call", (room_id) => {
-    socket.to(room_id).emit("off call");
+    io.to(room_id).emit("off call");
   });
 
   socket.on("end call", (room_id) => {
-    socket.to(room_id).emit("end call");
+    console.log("end call", room_id);
+    io.to(room_id).emit("end call");
+  });
+
+  socket.on("reject call", (room_id) => {
+    socket.to(room_id).emit("reject call");
   });
 });
 
