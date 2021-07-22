@@ -115,12 +115,20 @@ io.on("connection", (socket: Socket) => {
   // Call
   socket.on(
     "call",
-    ({ room_id, signal_data, name_caller, image_caller, socket_id }) => {
+    ({
+      room_id,
+      signal_data,
+      name_caller,
+      image_caller,
+      socket_id,
+      is_video,
+    }) => {
       socket.to(room_id).except(socket_id).emit("call", {
         signal_data,
         name_caller,
         image_caller,
         room_id,
+        is_video,
       });
     }
   );
