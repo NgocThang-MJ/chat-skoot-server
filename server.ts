@@ -20,7 +20,6 @@ const API_SECRET = process.env.API_SECRET;
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: process.env.CLIENT_URL }));
-
 app.use("/api/users", userRoute);
 app.use("/api/rooms", roomRoute);
 
@@ -40,6 +39,7 @@ let onlineIds: string[] = [];
 
 io.on("connection", (socket: Socket) => {
   socket.on("disconnect", () => {
+    // console.log("disconnect");
     onlineIds = onlineIds.filter((id) => id !== socket.data.user_id);
     socket.to(socket.data.rooms).emit("leave room", socket.data.user_id);
   });
@@ -113,17 +113,19 @@ io.on("connection", (socket: Socket) => {
   );
 
   // Call
-  socket.on("call", ({ room_id, signal_data, name_caller, image_caller }) => {
-    socket.to(room_id).emit("call", {
-      signal_data,
-      name_caller,
-      image_caller,
-      room_id,
-    });
-  });
+  socket.on(
+    "call",
+    ({ room_id, signal_data, name_caller, image_caller, socket_id }) => {
+      socket.to(room_id).except(socket_id).emit("call", {
+        signal_data,
+        name_caller,
+        image_caller,
+        room_id,
+      });
+    }
+  );
 
   socket.on("answer", ({ signal_data, room_id }) => {
-    console.log("answer room id", room_id);
     socket.to(room_id).emit("answer", signal_data);
   });
 
@@ -132,7 +134,6 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("end call", (room_id) => {
-    console.log("end call", room_id);
     io.to(room_id).emit("end call");
   });
 
