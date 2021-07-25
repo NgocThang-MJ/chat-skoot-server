@@ -20,12 +20,16 @@ export const fetchRooms = async (req: Request, res: Response) => {
 
 export const fetchMessages = async (req: Request, res: Response) => {
   try {
-    const room_id = req.params.room_id;
+    const { room_id, skip } = req.params;
+    console.log(skip);
+    console.log((parseInt(skip) || 0) * 25, "skip");
     const messages = await getDbInstance()
       .collection("chats")
       .aggregate([
         { $match: { room_id } },
         { $sort: { createdAt: -1 } },
+        { $project: { _id: 0, content: 1, sender_id: 1 } },
+        { $skip: (parseInt(skip) || 0) * 25 },
         { $limit: 25 },
       ])
       .toArray();

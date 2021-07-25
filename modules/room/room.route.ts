@@ -4,6 +4,6 @@ const router = express.Router();
 import { fetchMessages, fetchRooms } from "./room.controller";
 
 router.get("/:user_id", fetchRooms);
-router.get("/messages/:room_id", fetchMessages);
+router.get("/messages/:room_id/:skip", fetchMessages);
 
 export default router;
